@@ -29,7 +29,9 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             selectizeInput(inputId = "countries", label = "Choose country:", choices = unique(data$country), 
-                           selected = unique(data$country)[1], multiple = TRUE)
+                           selected = unique(data$country)[1], multiple = TRUE),
+            hr(),
+            strong("Graph settings:")
         ),
         
         mainPanel(
