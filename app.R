@@ -1,18 +1,14 @@
-# todo:
-# indicate data points + geom_points()
-# line type instead of colour
-
 library("readxl")
 library("ggplot2")
 library("scales")
 library("tidyr")
 
 # functions
-umround <- function(x, base){ 
+umround <- function(x, base) { 
     base * ceiling(x/base) 
 } 
 
-lmround <- function(x, base){ 
+lmround <- function(x, base) { 
     base * floor(x/base) 
 }
 
@@ -31,11 +27,13 @@ ui <- fluidPage(
             selectizeInput(inputId = "countries", label = "Choose country:", choices = unique(data$country), 
                            selected = unique(data$country)[1], multiple = TRUE),
             hr(),
-            strong("Graph settings:")
+            strong("Graph settings:"),
+            checkboxInput(inputId = "data_point", label = "add data points"),
+            checkboxInput(inputId = "linetype", label = "change to line types")
         ),
         
         mainPanel(
-            plotOutput("plot", height = "800px")
+            plotOutput("plot", height = "600px")
         )
     )
 )
@@ -46,18 +44,52 @@ server <- function(input, output) {
     chosen_countries <- reactive({
         input$countries
     })
+
     
     output$plot <- renderPlot(
-        
-        ggplot(subset(data, country %in% chosen_countries()), aes(x = time, y = RFR_spot, colour = country)) +
-            geom_line() + 
-            scale_x_continuous(breaks = c(1, seq(from = 0, to = max(data$time), by = 10)), expand = c(0, 0)) +
-            scale_y_continuous(breaks = seq(from = lmround(min(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
-                                            to   = umround(max(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
-                                            by = 0.0025), 
-                               labels = scales::percent_format()) +
-            geom_hline(yintercept = 0, colour = "darkgray") +
-            theme_light()
+        if (input$linetype == FALSE && input$data_point == FALSE) {
+            ggplot(subset(data, country %in% chosen_countries()), aes(x = time, y = RFR_spot, colour = country)) +
+                geom_line() + 
+                scale_x_continuous(breaks = c(1, seq(from = 0, to = max(data$time), by = 10)), expand = c(0, 0)) +
+                scale_y_continuous(breaks = seq(from = lmround(min(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
+                                                to   = umround(max(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
+                                                by = 0.0025), 
+                                   labels = scales::percent_format()) +
+                geom_hline(yintercept = 0, colour = "darkgray") +
+                theme_light()
+        } else if (input$linetype == TRUE && input$data_point == FALSE) {
+            ggplot(subset(data, country %in% chosen_countries()), aes(x = time, y = RFR_spot, linetype = country)) +
+                geom_line() + 
+                scale_x_continuous(breaks = c(1, seq(from = 0, to = max(data$time), by = 10)), expand = c(0, 0)) +
+                scale_y_continuous(breaks = seq(from = lmround(min(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
+                                                to   = umround(max(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
+                                                by = 0.0025), 
+                                   labels = scales::percent_format()) +
+                geom_hline(yintercept = 0, colour = "darkgray") +
+                theme_light()
+        } else if (input$linetype == FALSE && input$data_point == TRUE) {
+            ggplot(subset(data, country %in% chosen_countries()), aes(x = time, y = RFR_spot, colour = country)) +
+                geom_line() + 
+                scale_x_continuous(breaks = c(1, seq(from = 0, to = max(data$time), by = 10)), expand = c(0, 0)) +
+                scale_y_continuous(breaks = seq(from = lmround(min(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
+                                                to   = umround(max(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
+                                                by = 0.0025), 
+                                   labels = scales::percent_format()) +
+                geom_hline(yintercept = 0, colour = "darkgray") +
+                theme_light() +
+                geom_point()
+        } else if (input$linetype == TRUE && input$data_point == TRUE) {
+            ggplot(subset(data, country %in% chosen_countries()), aes(x = time, y = RFR_spot, linetype = country)) +
+                geom_line() + 
+                scale_x_continuous(breaks = c(1, seq(from = 0, to = max(data$time), by = 10)), expand = c(0, 0)) +
+                scale_y_continuous(breaks = seq(from = lmround(min(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
+                                                to   = umround(max(subset(data, country %in% chosen_countries(), select = "RFR_spot")), 0.0025), 
+                                                by = 0.0025), 
+                                   labels = scales::percent_format()) +
+                geom_hline(yintercept = 0, colour = "darkgray") +
+                theme_light() +
+                geom_point()
+        }
     )
 }
 
